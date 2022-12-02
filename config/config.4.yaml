@@ -1,0 +1,6 @@
+---
+  database: "~/data/4/session.db"
+  datadir: "~/data/4/"
+  unchokedpeers: 3
+  rpcenabled: false
+  dhtenabled: false
