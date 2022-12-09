@@ -1,9 +1,15 @@
 #!/bin/bash
 
 SESSION='cloudlab'
+
 MACHINES=(
-    'pc256.emulab.net' # node 0
-    'pc253.emulab.net' # node 1
+    'pc553.emulab.net' # node 0
+    'pc532.emulab.net'
+    'pc521.emulab.net'
+    'pc527.emulab.net'
+    'pc546.emulab.net'
+    'pc559.emulab.net'
+    'pc552.emulab.net'
 )
 
 tmux has-session -t $SESSION &> /dev/null

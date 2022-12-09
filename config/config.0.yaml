@@ -1,6 +1,6 @@
 ---
-  database: "~/data/seed/session.db"
-  datadir: "~/data/seed/"
+  database: "~/data/0/session.db"
+  datadir: "~/data/0/"
   unchokedpeers: 3
   rpcenabled: false
   dhtenabled: false
