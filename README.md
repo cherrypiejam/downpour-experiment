@@ -71,7 +71,7 @@ may be able to receive $d(p)$ from $p$ even at a lower $u(p)$.
 
 
 ## The Project
-
+In this project, we tried to reproduce the results from the original paper []. 
 
 ## Implementation
 
