@@ -18,8 +18,8 @@ from other peers.
 
 More specifically, BitTorrent peers attempt to maximize their downloading
 speed by downloading from any peer who sends pieces (file blocks of fixed size)
-to them and upload pieces to the top k peers who contribute the most to them. 
-In addition, they will split their upload bandwidth into k "fractions" and allocate
+to them and upload pieces to the top $k$ peers who contribute the most to them. 
+In addition, they will split their upload bandwidth into $k$ "fractions" and allocate
 each fraction to one of the top k peers. This bandwidth is called the 
 "equal-split bandwidth", and the set of the top k peers is called the "active set".
 The action of not sending to peers who didn't contribute enough is called "choking",
@@ -31,7 +31,7 @@ A for a period of time no matter how much A has contributed to B.
 
 Although BitTorrent has had a great success in the real world deployment, which
 seems to be a proof of how robust the incentive mechanism is, it is actually
-amenable to strategic peers. The paper [] represents an approach that
+amenable to strategic peers. The paper[[1]](#1) represents an approach that
 utilizes the existence of altruism in BitTorrent to build a selfish strategic BitTorrent 
 client called BitTyrant. BitTyrant carefully selects peers and contribution rates and 
 could break the robustness of BitTorrent by benefiting from other peers' uploads while 
@@ -44,7 +44,7 @@ altruistic optimisic unchoke behavior, since these unchokes have a lower chance
 to result in a reward. Second, BitTyrants can dynamically adjust their active set sizes
 to maximize expected uploads from other peers. Last but not least, BitTyrants can harvest
 the "excessive" amount of altruism in the system provided by a small amount of peers 
-with very high upload capacities []. More specifically, these high capacity peers have 
+with very high upload capacities [[1]](#1). More specifically, these high capacity peers have 
 higher equal-split bandwidths than the rest of the peers. Since the other peers can only 
 contribute with a lower bandwidth to the high capacity peers, the high cap peers
 are forced to contribute more bandwidth than they received from others. Such
@@ -71,7 +71,7 @@ may be able to receive $d(p)$ from $p$ even at a lower $u(p)$.
 
 
 ## The Project
-In this project, we tried to reproduce the results from the original paper []. We implemented the
+In this project, we tried to reproduce the results from the original paper [[1]](#1). We implemented the
 basic BitTyrant cheating strategy as specified in the previous section with a recent BitTorrent 
 implementation in Go. We intend to reproduce the main results from the original paper that:
 1. A single peer can improve its download speed given the same upload capacity by using BitTyrant;
@@ -154,7 +154,9 @@ comparing performance of a single BitTyrant client and a BitTorrant
 client
 
 
-
+## References
+<a id="1">[1]</a> 
+Piatek, Michael, et al. "Do incentives build robustness in BitTorrent." Proc. of NSDI. Vol. 7. 2007.
 
 
 
