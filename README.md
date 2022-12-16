@@ -30,8 +30,8 @@ is optimiscially unchoked by a peer B, B will uploads at the equal-split rate to
 A for a period of time no matter how much A has contributed to B.
 
 Although BitTorrent has had a great success in the real world deployment, which
-seems to be a proof of how robust the incentive mechanism is, it is actually
-amenable to strategic peers. The paper[[1]](#1) represents an approach that
+seems to be a proof of how robust the incentive mechanism is [[2]](#2), it is actually
+amenable to strategic peers. The paper [[1]](#1) represents an approach that
 utilizes the existence of altruism in BitTorrent to build a selfish strategic BitTorrent 
 client called BitTyrant. BitTyrant carefully selects peers and contribution rates and 
 could break the robustness of BitTorrent by benefiting from other peers' uploads while 
@@ -158,5 +158,6 @@ client
 <a id="1">[1]</a> 
 Piatek, Michael, et al. "Do incentives build robustness in BitTorrent." Proc. of NSDI. Vol. 7. 2007.
 
-
+<a id="2">[2]</a> 
+Cohen, Bram. "Incentives build robustness in BitTorrent." Workshop on Economics of Peer-to-Peer systems. Vol. 6. 2003.
 
