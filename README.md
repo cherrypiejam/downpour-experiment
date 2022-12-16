@@ -6,25 +6,36 @@
 Gongqi Huang and Jingyuan Chen, COS 518, 2022
 
 ## Introduction
+In peer-to-peer systems, a fundamental challenge is to disincentivize peers to 
+free-ride by consuming others' resources without contributing to the system. In 
+the BitTorrent file distribution protocol, each peer downloads file contents from
+other peers while contributing its own upload bandwidth to transfer contents to 
+others. A strategy called tit-for-tat is used to explicitly address the issue,
+under which each peer only donate certain amount of upload bandwidth to another peer 
+if that peer has donated relatively the same amount to it. Such a rule encourages
+the peers to be altruistic since peers who don't upload can't expect to download 
+from other peers.
 
-In many peer-to-peer systems, the fundamental issue is that peers tend to take
-the benefits without contributing to the system. In BitTorrent file sharing
-system, tit-for-tat is used to explicitly address the issue by providing enough
-incentives for peers to also contribute to the system while benefiting from it.
-More specifically, in BitTorrent, peers attempt to maximize their downloading
-speed by downloading from any peer who sends pieces to them and upload pieces
-to the top k peers who contribute the most to them. Choking algorithms 'choke'
-someone in a way that not providing any piece for them to download in a period
-of time. Deciding which to upload or not is essentially a tit-for-tat method,
-providing an incentive that if I, as a peer, want to take the benefits of the
-system, I must contribute to the system in return.
+More specifically, BitTorrent peers attempt to maximize their downloading
+speed by downloading from any peer who sends pieces (file blocks of fixed size)
+to them and upload pieces to the top k peers who contribute the most to them. 
+In addition, they will split their upload bandwidth into k "fractions" and allocate
+each fraction to one of the top k peers. This bandwidth is called the 
+"equal-split bandwidth", and the set of the top k peers is called the "active set".
+The action of not sending to peers who didn't contribute enough is called "choking",
+and the action of sending to the peers who reciprocated is called "unchoking". 
+To prevent low capacity peers from being starved, the Bittorrent protocol also
+let peers to "optimistically unchoke" random selected peers periodically. If a peer A
+is optimiscially unchoked by a peer B, B will uploads at the equal-split rate to
+A for a period of time no matter how much A has contributed to B.
 
-Although BitTorrent has had a great success in the real world deployment which
-seems to be a proof of how robust the incentives provided by BitTorrent are, the
-tit-for-tat method used by it isn't robust to strategic peers. The paper represents
-an approach that utilizes the existence of altruism in BitTorrent to build a
-strategic BitTorrent client, called BitTyrant, which carefully selects peers and
-contribution rates to break the robustness provided by BitTorrent.
+Although BitTorrent has had a great success in the real world deployment, which
+seems to be a proof of how robust the incentive mechanism is, it is actually
+amenable to strategic peers. The paper [] represents an approach that
+utilizes the existence of altruism in BitTorrent to build a strategic BitTorrent 
+client called BitTyrant. BitTyrant carefully selects peers and contribution rates and 
+could break the robustness of BitTorrent by benefiting from other peers' uploads while 
+contributing at only much lower rate.
 
 ### BitTyrant
 
