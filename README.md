@@ -32,12 +32,34 @@ A for a period of time no matter how much A has contributed to B.
 Although BitTorrent has had a great success in the real world deployment, which
 seems to be a proof of how robust the incentive mechanism is, it is actually
 amenable to strategic peers. The paper [] represents an approach that
-utilizes the existence of altruism in BitTorrent to build a strategic BitTorrent 
+utilizes the existence of altruism in BitTorrent to build a selfish strategic BitTorrent 
 client called BitTyrant. BitTyrant carefully selects peers and contribution rates and 
 could break the robustness of BitTorrent by benefiting from other peers' uploads while 
 contributing at only much lower rate.
 
 ### BitTyrant
+BitTyrant can achieve higher download speeds at lower "uploading costs" by utilizing
+a few facts of the basic BitTorrent protocol. First, a selfish peer can skip the
+altruistic optimisic unchoke behavior, since these unchokes have a lower chance
+to result in a reward. Second, BitTyrants can dynamically adjust their active set sizes
+to maximize expected uploads from other peers. Last but not least, BitTyrants can harvest
+the "excessive" amount of altruism in the system provided by a small amount of peers 
+with very high upload capacities []. More specifically, these high capacity peers have 
+higher equal-split bandwidths than the rest of the peers. Since the other peers can only 
+contribute with a lower bandwidth to the high capacity peers, the high cap peers
+are forced to contribute more bandwidth than they received from others. Such
+excessive altruism can then be utilized by selfish BitTyrants. BitTyrants could 
+speculatively uploads to these high capacity peers as much as possible. 
+
+To infer the upload capacity of a peer, BitTyrant uses the following method. First, it 
+assumes that the download speed of a peer is approximately the same as its upload speed. 
+Thus, they can use a peer's download speed as its estimated upload speed. Second,
+the download speed of a peer can be inferred from its "announcement rate". In BitTorrent,
+a peer will make an announcement to every other peer when it finished downloading a piece. 
+Therefore, BitTyrants could estimate the download speed with annoucement rate * piece size.
+
+The basic strategy of BitTyrant is as following. It tries to maintain a list of peers, sorted
+by $d(p)/u(p)$,
 
 
 ## The Project
