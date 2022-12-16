@@ -18,8 +18,8 @@ from other peers.
 
 More specifically, BitTorrent peers attempt to maximize their downloading
 speed by downloading from any peer who sends pieces (file blocks of fixed size)
-to them and upload pieces to the top k peers who contribute the most to them.
-In addition, they will split their upload bandwidth into k "fractions" and allocate
+to them and upload pieces to the top $k$ peers who contribute the most to them.
+In addition, they will split their upload bandwidth into $k$ "fractions" and allocate
 each fraction to one of the top k peers. This bandwidth is called the
 "equal-split bandwidth", and the set of the top k peers is called the "active set".
 The action of not sending to peers who didn't contribute enough is called "choking",
@@ -30,8 +30,8 @@ is optimiscially unchoked by a peer B, B will uploads at the equal-split rate to
 A for a period of time no matter how much A has contributed to B.
 
 Although BitTorrent has had a great success in the real world deployment, which
-seems to be a proof of how robust the incentive mechanism is, it is actually
-amenable to strategic peers. The paper [] represents an approach that
+seems to be a proof of how robust the incentive mechanism is [[1]](#1), it is actually
+amenable to strategic peers. The BitTyrant paper [[2]](#2) represented an approach that
 utilizes the existence of altruism in BitTorrent to build a selfish strategic BitTorrent
 client called BitTyrant. BitTyrant carefully selects peers and contribution rates and
 could break the robustness of BitTorrent by benefiting from other peers' uploads while
@@ -44,7 +44,7 @@ altruistic optimisic unchoke behavior, since these unchokes have a lower chance
 to result in a reward. Second, BitTyrants can dynamically adjust their active set sizes
 to maximize expected uploads from other peers. Last but not least, BitTyrants can harvest
 the "excessive" amount of altruism in the system provided by a small amount of peers
-with very high upload capacities []. More specifically, these high capacity peers have
+with very high upload capacities [[2]](#2). More specifically, these high capacity peers have
 higher equal-split bandwidths than the rest of the peers. Since the other peers can only
 contribute with a lower bandwidth to the high capacity peers, the high cap peers
 are forced to contribute more bandwidth than they received from others. Such
@@ -71,7 +71,24 @@ may be able to receive $d(p)$ from $p$ even at a lower $u(p)$.
 
 
 ## The Project
+In this project, we tried to reproduce the results from the original paper [[2]](#2). We implemented the
+basic BitTyrant cheating strategy as specified in the previous section with a recent BitTorrent
+implementation in Go. We intend to reproduce the main results from the original paper that:
+1. A single peer can improve its download speed given the same upload capacity by using BitTyrant;
+2. The overall download speeds of all peers in the system can be improved if they all use BitTyrant.
 
+In addition to the basic BitTyrant strategy, we also implemented two additional cheating strategies
+indicated in the paper. First, we implemented BitRebel, a strategic peer intended to counter BitTyrants.
+BitRebel can utilize one of BitTyrant's weakness, that is, BitTyrants infer the upload capacity of
+a peer through its annoucement rate. Therefore, BitRebels can make fast fake annoucements to trick
+BitTyrants into donate their capacities to BitRebels. As a result, the download speed of BitRebels
+is expected to be high as more BitTyrant peers exist, and the BitTyrant peers' download speeds will
+be low if BitRebels exist.
+
+Last but not least, we implemented BitSybil, where a BitTorrent peer launches a Sybil attack by
+join the system as $N$ sybil identities and split its upload capacity evenly among the Sybils.
+This strategy could be beneficial since the BitSybil peer has a higher chance to receive optimistic
+unchokes, which are essentially "free lunches".
 
 ## Implementation
 
@@ -152,6 +169,17 @@ BitTyrant client and a vanilla BitTorrent client under a same setting.
 2. the present of very high cap matters
 3. peer max connection & tracker matter (discoverability)
 
+
+1. Distribution Approximation
+2. File size, #Peers, #Seeders, etc.
+3. Single Tyrant exp, with:
+    a) k = 1
+    b) k = 0.44
+    c) Constant active setsize
+4. All Tyrant exp
+5. BitRebel vs. BitTyrant
+6. BitSybil vs. BitTorrent
+
 ### Setup
 
 Our evaluation runs on 7 Emulab pc3000 nodes. Three seeders with a combined upload
@@ -202,4 +230,11 @@ capacities follow the similar distribution as stated in the paper.
 
 ### Sybil Attack
 
+=======
+## References
+<a id="1">[1]</a>
+Cohen, Bram. "Incentives build robustness in BitTorrent." Workshop on Economics of Peer-to-Peer systems. Vol. 6. 2003.
+
+<a id="2">[2]</a>
+Piatek, Michael, et al. "Do incentives build robustness in BitTorrent." Proc. of NSDI. Vol. 7. 2007.
 
