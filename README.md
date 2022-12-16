@@ -71,13 +71,30 @@ may be able to receive $d(p)$ from $p$ even at a lower $u(p)$.
 
 
 ## The Project
-In this project, we tried to reproduce the results from the original paper []. 
+In this project, we tried to reproduce the results from the original paper []. We implemented the
+basic BitTyrant cheating strategy as specified in the previous section with a recent BitTorrent 
+implementation in Go. We intend to reproduce the main results from the original paper that:
+1. A single peer can improve its download speed given the same upload capacity by using BitTyrant;
+2. The overall download speeds of all peers in the system can be improved if they all use BitTyrant.
+
+In addition to the basic BitTyrant strategy, we also implemented two additional cheating strategies
+indicated in the paper. First, we implemented BitRebel, a strategic peer intended to counter BitTyrants.
+BitRebel can utilize one of BitTyrant's weakness, that is, BitTyrants infer the upload capacity of 
+a peer through its annoucement rate. Therefore, BitRebels can make fast fake annoucements to trick
+BitTyrants into donate their capacities to BitRebels. As a result, the download speed of BitRebels
+is expected to be high as more BitTyrant peers exist, and the BitTyrant peers' download speeds will
+be low if BitRebels exist.
+
+Last but not least, we implemented BitSybil, where a BitTorrent peer launches a Sybil attack by 
+join the system as $N$ sybil identities and split its upload capacity evenly among the Sybils. 
+This strategy could be beneficial since the BitSybil peer has a higher chance to receive optimistic 
+unchokes, which is essentially a "free lunch". 
 
 ## Implementation
 
 #### Rollback (Vanilla)
 
-The paper implemented their BitTyrant client atop Vuze, a Java-based implementation
+The original paper implemented their BitTyrant client atop Vuze, a Java-based implementation
 of BitTorrent. We, instead, select [rain](https://github.com/cenkalti/rain), a BitTorrent
 client written in Go as the base to reimplement BitTyrant for the following reasons:
 
@@ -115,6 +132,16 @@ One challenge bucket, ported
 Originally we plan to mount Sybil attack in rain by spawning
 
 ## Evaluation
+
+1. Distribution Approximation
+2. File size, #Peers, #Seeders, etc.
+3. Single Tyrant exp, with:
+    a) k = 1
+    b) k = 0.44
+    c) Constant active setsize
+4. All Tyrant exp
+5. BitRebel vs. BitTyrant
+6. BitSybil vs. BitTorrent
 
 ### Setup
 
