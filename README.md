@@ -75,6 +75,44 @@ In this project, we tried to reproduce the results from the original paper [].
 
 ## Implementation
 
+#### Rollback (Vanilla)
+
+The paper implemented their BitTyrant client atop Vuze, a Java-based implementation
+of BitTorrent. We, instead, select [rain](https://github.com/cenkalti/rain), a BitTorrent
+client written in Go as the base to reimplement BitTyrant for the following reasons:
+
+1. rain is running in production at [put.io](https://put.io/)
+2. rain is written in a modern language
+
+Unfortunately, modern BitTorrent clients often come with many optimizations. We thus
+did a few rollbacks in rain:
+
+1. Peer connections are accepted on per IP basis because presumably a single-user
+   machine only needs to download a file once. We switch it to per IP + port basis
+   which allows us to run over hundreds of clients on a few number of physical nodes.
+2. [Fast extension](http://bittorrent.org/beps/bep_0006.html) are enabled by default in rain.
+   However, at the time when the paper published, fast extension has not yet been
+   created which makes it impossible to be implemented in Vuze. Therefore, we disable
+   this feature to better simulate the original experiment.
+3. Rarest first policy is implemented for piece selection in rain, which follows the
+   original BitTorrent implementation. However, when multiples share the same level
+   of rarity, rain tends to select the one with the lowest index number. However,
+   this is bad for our experiments. In a fresh swarm, whoever starts to download first
+   has the advantage to have rare pieces which makes the system to have a slow start.
+   Instead, we implement a random tie breaker to select a piece among pieces that
+   have the same level of rarity.
+
+#### Tyrant
+
+We implemented BitTyrant unchoke algorithm [figure]
+One challenge bucket, ported
+
+#### Rebel
+
+
+#### Sybil
+
+Originally we plan to mount Sybil attack in rain by spawning
 
 ## Evaluation
 
@@ -82,8 +120,11 @@ In this project, we tried to reproduce the results from the original paper [].
 
 Emulab Ubuntu18 64 pc3000
 7 Nodes. 1 node for 3 seeders (128KB) + 1 tracker
-others 5 peers for each
+others 6, 50 peers per each
 bottleneck? fs, network?
+
+comparing performance of a single BitTyrant client and a BitTorrant
+client
 
 
 
