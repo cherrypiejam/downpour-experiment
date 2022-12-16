@@ -88,7 +88,7 @@ be low if BitRebels exist.
 Last but not least, we implemented BitSybil, where a BitTorrent peer launches a Sybil attack by 
 join the system as $N$ sybil identities and split its upload capacity evenly among the Sybils. 
 This strategy could be beneficial since the BitSybil peer has a higher chance to receive optimistic 
-unchokes, which is essentially a "free lunch". 
+unchokes, which are essentially "free lunches". 
 
 ## Implementation
 
@@ -152,6 +152,7 @@ bottleneck? fs, network?
 
 comparing performance of a single BitTyrant client and a BitTorrant
 client
+
 
 
 
