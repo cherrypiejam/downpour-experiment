@@ -52,14 +52,22 @@ excessive altruism can then be utilized by selfish BitTyrants. BitTyrants could
 speculatively uploads to these high capacity peers as much as possible. 
 
 To infer the upload capacity of a peer, BitTyrant uses the following method. First, it 
-assumes that the download speed of a peer is approximately the same as its upload speed. 
-Thus, they can use a peer's download speed as its estimated upload speed. Second,
-the download speed of a peer can be inferred from its "announcement rate". In BitTorrent,
+assumes that $u_p \approx d_p$, where $u_p$ is the upload speed of $p$ and $d_p$ the download
+speed. Thus, they can use a peer's download speed as its estimated upload speed. Second,
+the download speed of a peer can be inferred from its "announcement rate" $r_p$. In BitTorrent,
 a peer will make an announcement to every other peer when it finished downloading a piece. 
-Therefore, BitTyrants could estimate the download speed with annoucement rate * piece size.
+Therefore, BitTyrants could estimate the upload speed as $u_p \approx d_p \approx r_p \cdot S$,
+where $S$ is the size of a piece.
 
-The basic strategy of BitTyrant is as following. It tries to maintain a list of peers, sorted
-by $d(p)/u(p)$,
+The basic strategy of a BitTyrant is as following. It tries to maintain a list of peers, sorted
+by $\frac{d(p)}{u(p)}$, where $d(p)$ is the expected received download speed from $p$, and 
+$u(p)$ is the expected upload speed the BitTyrant peer must contribute in order to receive
+the $d(p)$ reward from $p$. Both values are estimated at an initial value, but once a BitTyrant
+has received downloads from a peer $q$, it can update $d(q)$ with the real download speed
+instead of the estimated one. If the Tyrant peer did not receive uploads from peer $p$, it will
+gradually increase $u(p)$ since it needs to contribute more uploads to get the reward from $p$; 
+otherwise, if it keeps receiving from a peer $p$, it will gradually decrease $u(p)$, since it 
+may be able to receive $d(p)$ from $p$ even at a lower $u(p)$.
 
 
 ## The Project
