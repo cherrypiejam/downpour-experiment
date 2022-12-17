@@ -3,13 +3,13 @@
 SESSION='cloudlab'
 
 MACHINES=(
-    'pc553.emulab.net' # node 0
-    'pc532.emulab.net'
-    'pc521.emulab.net'
-    'pc527.emulab.net'
-    'pc546.emulab.net'
-    'pc559.emulab.net'
-    'pc552.emulab.net'
+    'pc272.emulab.net' # node 0
+    'pc340.emulab.net'
+    'pc330.emulab.net'
+    'pc356.emulab.net'
+    'pc326.emulab.net'
+    'pc339.emulab.net'
+    'pc354.emulab.net'
 )
 
 tmux has-session -t $SESSION &> /dev/null

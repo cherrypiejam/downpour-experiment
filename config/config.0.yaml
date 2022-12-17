@@ -1,6 +1,7 @@
 ---
   database: "~/data/0/session.db"
   datadir: "~/data/0/"
-  unchokedpeers: 3
   rpcenabled: false
   dhtenabled: false
+  maxpeerdial: 60
+  maxpeeraccept: 60

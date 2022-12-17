@@ -1,12 +1,13 @@
 #!/bin/sh
 
 # Example
-# ./peer_run.sh vanilla 1 50(upload) debug
+# ./peer_run.sh vanilla 1 50(upload) 0.42(kvalue) debug
+# ./peer_run.sh tyrant 1 50(upload) 12(initial reciprocation) debug
 
 echo > data/$2/stats.log
 while true
 do
-    ./binary/$1/downpour dd -t torrent/test.torrent -c config/config.$2.yaml -o data/$2 -ul $3
+    ./binary/$1/downpour dd -t torrent/test.torrent -c config/config.$2.yaml -o data/$2 -ul $3 -k $4
     rm data/$2/test.img*
     echo $1 $2 finished in `cat data/$2/stats.log`
     sleep 1
