@@ -248,10 +248,6 @@ beyond than any other peers (mostly ~40) in the swarm. BitTyrant can quickly fin
 capacity peer and stick with it. In other words, the single high capacity peer dominates the
 performance of BitTyrant.
 
-```diff
-- ISSUE
-```
-
 #### 30 Clients, k=1, Normal Distribution
 
 ![swarm30_k1_normal](figures/swarm30_k1_normal_u20.png)
@@ -390,7 +386,6 @@ largely. This can be solved by blocking the local IP addresses. However, in this
 by running one Sybil identity one at a time and get the maximum download time among all rounds. As a result,
 we can see the performance of BitSybil is higher than BitTorrent and has smaller standard deviation.
 
-=======
 ## References
 <a id="1">[1]</a>
 Cohen, Bram. "Incentives build robustness in BitTorrent." Workshop on Economics of Peer-to-Peer systems. Vol. 6. 2003.
