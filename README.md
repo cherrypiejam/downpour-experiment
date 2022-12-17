@@ -80,8 +80,8 @@ implementation in Go. We intend to reproduce the main results from the original 
 In addition to the basic BitTyrant strategy, we also implemented two additional cheating strategies
 indicated in the paper. First, we implemented BitRebel, a strategic peer intended to counter BitTyrants.
 BitRebel can utilize one of BitTyrant's weakness, that is, BitTyrants infer the upload capacity of
-a peer through its annoucement rate. Therefore, BitRebels can make fast fake annoucements to trick
-BitTyrants into donate their capacities to BitRebels. As a result, the download speed of BitRebels
+a peer through its announcement rate. Therefore, BitRebels can make fast fake announcements to trick
+BitTyrants into donate their capacities to BitRebel. As a result, the download speed of BitRebels
 is expected to be high as more BitTyrant peers exist, and the BitTyrant peers' download speeds will
 be low if BitRebels exist.
 
@@ -96,7 +96,7 @@ The paper implemented their BitTyrant client atop Vuze, a Java-based implementat
 of BitTorrent. Instead, We select [rain](https://github.com/cenkalti/rain), a BitTorrent
 client written in Go as the base to reimplement BitTyrant on top of it.
 
-We added approximately 500 LOC in Go and 80 LOC in Haskell to rollback to vanilla version
+We added approximately 600 LOC in Go and 80 LOC in Haskell to rollback to vanilla version
 and implement BitTyrant, BitRebel, and Sybil Attack. The actual lines added are a lot higher
 than this (roughly over 3000 LOC), but mostly they are code ported from a library that
 requires minor changes for our use and duplicated code to workaround with changes that
@@ -123,18 +123,39 @@ did a few rollbacks in rain:
    of rarity, rain tends to select the one with the lowest index number. However,
    this is bad for our experiments. In a fresh swarm, whoever starts to download first
    has the advantage to have rare pieces which makes the system to have a slow start.
-   Instead, we implement a random tie breaker to select a piece among pieces that
-   have the same level of rarity.
+   Instead, we implement a random tie breaker to select a piece among pieces with
+   the same level of rarity.
+4. In the official reference implementation of BitTorrent, the active set size of a client
+   $p$ is proportional to $\sqrt{u_p}$ where $u_p$ stands for its upload capacity. In rain,
+   the active set size is set to be a constant value (default is 3). We thus introduce a
+   new input argument $k$ as the proportion to calculate the active size for each client
+   such that active set size = $k\sqrt{u_p}$.
 
-#### Tyrant
+#### BitTyrant
 
-We implemented BitTyrant unchoke algorithm [figure]
-One challenge bucket, ported
+We implement BitTyrant unchoke algorithm on top of Vanilla. Although the algorithm itself
+is straightforward and relatively easy to implement, it requires many minor adjustments
+to make it work (will talk about details in the evaluation). One challenge is we need a meter
+to measure a moving average rate within a small time window which is 10 seconds. The
+package used in the original implementation is insufficient for our requirements, so we
+have to port it into our BitTyrant implementation with more features added.
 
-#### Rebel
+#### BitRebel
 
+In BitTorrent protocol, when two peers establish a connection, they exchange their bitfield
+message to indicate which pieces they have. Once a peer receives a piece from another peer,
+it broadcasts everyone it knows to inform it holds a particular piece. Further, when a peer
+finishes downloading and decides to seed, it tells everyone it has all pieces by broadcasting
+a have-all message. As a rebel, the goal is to let BitTyrant pay. In other words,
+we don't want to be malicious by announcing pieces we don't have to boost our announce rate,
+because doing so can possibly slow down regular peers or even mess up the file they are
+downloading. Alternatively, the second option seems to be the best place for us to implement
+BitRebel by repetitively sending have messages of some piece we do have. This approach may
+only add a negligible overhead of processing messages to a regular peer and doesn't affect
+the unchoking behavior of that peer. Most importantly, a BitTyrant client can falsely infer
+that a BitRebel client to have high bandwidth and thus connect to it.
 
-#### Sybil
+#### BitSybil
 
 Originally we plan to mount Sybil attack in rain by spawning many event loops, that
 each is responsible for a portion of the target file and thus behaves like a small
@@ -191,7 +212,6 @@ implementation under multiple swarm settings.
 %% By scaling down the download file size and the overall peer capacities,
 %% we can prevent the potential bottlenecks from the disk and network.
 
-
 #### A Highly Skewed Bandwidth Distribution
 
 The paper reports that the raw bandwidth capacity for peers is a highly skewed distribution
@@ -201,34 +221,174 @@ we use Four Parameter Logistic (4PL) and our eyes to approximate the actual dist
 
 ```python
 def truly_magic(x):
-    return np.log(7.991586+(-4.094174-20.891589)/(1+(x/14.42096)**2.158334))
+    return np.log(7.991586+(-4.094174-20.891589)/(1+(x/14.42096)**2.158334))*10
 ```
 
-Setting a proper x and y axis, we get a similar distribution as in the paper.
+![distribution](figures/distribution.png)
 
-For experiments, we wrote a script to use the function above to generate a swarm that peer
-capacities follow the similar distribution as stated in the paper.
+Setting a proper x and y limits, we get a similar distribution as in the paper. For experiments
+we write a script to generate a swarm that has the similar distribution by randomly sampling
+y axis to get the corresponding bandwidth capacity for each peer.
 
-### Performance of a Single BitTyrant
+#### Miscellaneous
+
+
+### BitTyrant
 
 #### 30 Clients, k=1, Real Distribution
 
+![swarm30_k1](figures/swarm30_k1.png)
+
+We first conduct an experiment with 30 clients in the swarm. We compare the performance of
+a single BitTyrant and a single BitTorrent in the swarm. We found that BitTyrant performs
+better than BitTorrent in general which is similar to what was on the paper. In the figure,
+we can see BitTyrant with 20 upload capacity has nearly the same download time as 100 capacity.
+This is because there is one peer that has an overly high capacity (~500) way
+beyond than any other peers (mostly ~40) in the swarm. BitTyrant can quickly find the high
+capacity peer and stick with it. In other words, the single high capacity peer dominates the
+performance of BitTyrant.
+
+```diff
+- ISSUE
+```
+
 #### 30 Clients, k=1, Normal Distribution
 
-#### 300 Clients, k=3/sqrt(mean(d)), Real Distribution
+![swarm30_k1_normal](figures/swarm30_k1_normal_u20.png)
+
+We then conduct the same experiment under the same setting except for the bandwidth
+distribution of the swarm. In a normal distribution, most peers has a capacity of
+50-60 KB/s. We only compare the performance of BitTyrant and BitTorrent under a capacity
+of 20 KB/s. The result shows that BitTyrant performs better than BitTorrent because BitTyrant
+can find the relatively high capacity peers (compare to itself) and try to maintain the
+connection with them.
+
+```diff
+- ISSUE The paper did their experiments under the setting of 350 nodes.
+-       We decide to scale up our experiments to see if we can still have the same results.
+```
+
+#### 300 Clients, k=0.44, Real Distribution
+
+![swarm300_k044_uinit7](figures/swarm300_k044_uinit7.png)
+
+In this experiment, we set k value to be 0.44 which is calculated from $3 \div \sqrt{expect}$.
+$expect$ comes from the mean value of the swarm. We do this because we want the most peers
+in the swarm to have an active set size of 3. Furthermore, setting k value to be 0.44, we
+expect high capacity peers to have relatively smaller active set size than k is 1. We also
+expect BitTyrant can benefit from it and thus get a higher reciprocation share from high capacity
+peers because a smaller active set size means a higher equal split rate. Also, in this experiment,
+we let BitTyrant assumes peers (if has not observed the actual reciprocation rate) to have a
+reciprocation of 7 KB/s. This is calculated by finding the average equal split rate of the swarm.
+
+As the figure shown, we see the average download time between BitTyrant and BitTorrent is
+nearly the same, which is not what we expect at the first place. Also, BitTyrant has a higher
+standard deviation than BitTorrent when the capacity goes higher. It seems that BitTyrant
+cannot always find high capacity peers and get reciprocation from them.
+
+```diff
+- ISSUE At the moment of analyzing the experiment results, we thought the reason of not getting expected
+-       numbers is because the k value is too small so that the high capacity peer doesn't
+-       have a place for us (NOT the root cause).
+```
 
 #### 300 Clients, k=1, Real Distribution
 
-#### 60 Clients, k=3/sqrt(mean(d)), Real Distribution
+![swarm300_k1_uinit7](figures/swarm300_k1_uinit7.png)
+
+In this experiment, we keep the same setting as the last one but tune the k value to 1. However,
+as the figure shown above, BitTyrant has a slower download time and a much high standard deviation
+than BitTorrent. It is possible that the initial value we set for BitTyrant is too small so that
+it takes several rounds for BitTyrant to increase its upload contribution to other peers to eventually
+get some reciprocation.
+
+![swarm300_k1_diffu](figures/swarm300_k1_diffu.png)
+
+We then run another experiment in the same warm but with different initial values for BitTyrant.
+U=7 is setting we used in the previous experiment. The figure above shows that when setting
+the initial value to be 30, the download time is close to BitTorrent but not better. Having a
+higher initial value does help to improve the performance of BitTyrant. The reason is that
+BitTyrant assumes everyone initially has a high reciprocation and the same high upload contribution
+needed to the reciprocation. Therefore, BitTyrant will spend a high upload budget for that peer.
+Even though the actual reciprocation from that peer might be low, since BitTyrant contribute
+a lot, that peer will at least send something back in return.
+
+```diff
+- ISSUE The real issue here is the max number of connections. The swarm has 300 cliens in it but
+-       each peer may only know a few of them. In this case, BitTyrant cannot perform will than
+-       BitTorrent if the latter knows some high capacity peers while the former does not.
+```
+
+![swarm300_k1_vanilla_max](figures/swarm300_k1_vanilla_max.png)
+
+In previous experiment, we found that the tracker is limited to only response 100 peers to a client.
+Also, a client is restricted to only connect to 80 peers at most and only accept a maximum of 20 connections
+from the outside. Therefore, we conduct another experiment (as shown in the figure above) by allows
+each client can discover and connect to 200 peers at most. Note that clients are all BitTorrent in
+this case. We can see that the download time grows more or less. Under a capacity of 300 KB/s, we see
+the download time of the new one grows unbounded.
+
+```diff
+- ISSUE When there are too many connection in the system, the swarm gets slower.
+```
+
+#### 60 Clients, k=0.44, Real Distribution
+
+![swarm60_k044_u7](figures/swarm60_k044_u7.png)
+
+In this experiment, we scale down the swarm to 60 clients. Although the average performance of BitTyrant
+is close to BitTorrent in to most case, BitTyrant has a higher standard deviation which makes its performance
+unstable in the figure. It took us a while to debug why we are getting this result. After re-checking our
+implementation of unchoke algorithm, we fond that we need to reset the meter that measures the reciprocation
+of every other peer each round. Although this is not explicitly mentioned in the paper, we think it makes
+sense. When a high capacity peer chokes us, since it doesn't upload pieces to us, the measured reciprocation
+of that peer will grow lower, so that we can mistakenly think it is a low capacity peer that requires
+many uploads but returns a little.
+
+```diff
+- ISSUE Need to reset the meter each round to clean the history. We only look at the reciprocation in a 10 seconds time window.
+```
 
 #### 60 Clients, k=1, Real Distribution
 
+![swarm60_k1_u7_afterfix](figures/swarm60_k1_u7_afterfix.png)
 
-### Performance of a BitTyrant Swarm
+After fix, the download time of BitTyrant improves than the previous experiment, but it is not better than
+BitTorrent.
+
+### BitTyrant Swarm
+
+![all_tyrant_swarm60_k044_u7](figures/all_tyrant_swarm60_k044_u7.png)
+
+In this experiment, we compare the overall swarm performance between an all BitTyrant swarm and an all BitTorrent
+swarm. From the figure above, we the performance of BitTyrant swarm has a large variation of download times 
+compared with Vanilla. The most powerful peers have a lower download time compared with those in Vanilla, and
+the least powerful peers have a much higher download time. We think
+this is because BitTyrant can quickly find high capacity peers so that the swarm starts fast. However,
+based on previous experiments of BitTyrant, it is unstable in terms of performance, so the slow BitTyrant
+clients drag down the swarm performance.
 
 ### BitRebel
 
+![swarm60_rebel](figures/swarm60_rebel.png)
+
+This experiments demonstrates the performance of our BitRebel implementation against BitTyrant. In the
+figure, with vanilla means BitRebel runs in a swarm where everyone else is BitTorrent. Similarly, with
+tyrant means it runs in a swarm where only has BitTyrant. As shown in the figure, the download speed
+of BitRebel is shorter in when all other peers are BitTyrant, meaning that it successfully faked its
+announcement rate to trick BitTyrant clients.
+
+
 ### Sybil Attack
+
+![sybil_2](figures/sybil_2.png)
+
+This experiment compares the performance of BitSybil with 2 identities (downloading two part of file concurrently)
+and BitTorrent. Unfortunately, an issue with the current implementation is different Sybil identities
+can connect to each other for a piece. Although it won't effect the correctness it can impacts the performance
+largely. This can be solved by blocking the local IP addresses. However, in this experiment, we did a workaround
+by running one Sybil identity one at a time and get the maximum download time among all rounds. As a result,
+we can see the performance of BitSybil is higher than BitTorrent and has smaller standard deviation.
 
 =======
 ## References
