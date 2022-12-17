@@ -1,6 +1,3 @@
-%% # downpour Experiment
-%% This repo contains scripts used for downpour experiments running on cloudlab
-
 # Reimplementation of BitTyrant: Do Incentives Build Robustness in BitTorrent?
 
 Gongqi Huang and Jingyuan Chen, COS 518, 2022
@@ -206,11 +203,6 @@ BitTyrant client and a vanilla BitTorrent client under a same setting.
 Our evaluation runs on 7 Emulab pc3000 nodes. Three seeders with a combined upload
 capacity of 128KB/s and a tracker are hosted on a single node. We evaluate our
 implementation under multiple swarm settings.
-
-%% Thirty peers are distributed into the other 6 nodes, 5 peers per node.
-%% Three hundreds peers are equally distributed into other 6 nodes, which is 50 peers per node.
-%% By scaling down the download file size and the overall peer capacities,
-%% we can prevent the potential bottlenecks from the disk and network.
 
 #### A Highly Skewed Bandwidth Distribution
 
